@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block extraHeader %}
+<script type="text/javascript" src="/static/main.js"></script>
+{% end %}
+
+{% block body %}
+
+<h1> {{ title }} </h1>
+<h3 class="alert alert-danger" id="msg"></h3>
+<ul id="items"></ul>
+
+{% end %}
