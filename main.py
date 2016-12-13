@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
     settings = {
         'debug': args.debug, 
+        'template_path': os.path.join(os.getcwd(), 'views'),
         'static_path': os.path.join(os.getcwd(), 'static')
     }
 
