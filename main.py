@@ -1,3 +1,4 @@
+from utilities import *
 import argparse
 import tornado
 import tornado.ioloop
@@ -8,11 +9,11 @@ import logging
 # Global models
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-class APIJobHandler(tornado.web.RequestHandler):
+class APIJobHandler(APIRequestHandler):
     def get(self):
         self.write({ 'status': 'success', 'result': [ 1, 2, 3 ] })
 
-class APIPageHandler(tornado.web.RequestHandler):
+class APIPageHandler(APIRequestHandler):
     def get(self):
         self.render('api.html', title='API Index')
 
