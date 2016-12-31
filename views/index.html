@@ -1,14 +1,47 @@
 {% extends "layout.html" %}
 
-{% block extraHeader %}  {% end %}
+{% block extraHeader %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
+<style>
+#result { width: 700px; height: 400px; }
+</style>
+{% end %}
 
 {% block body %}
 
-<h1> {{ title }} </h1>
-<ul>
-{% for item in items %}
-<li>{{ item }}
-{% end %}
-</ul>
+<h1>{{ title }}</h1>
+<div id="result"></div>
 
+<script>
+var data = [{ label: 'NH3/NOx/Ben/Co2/Alcohol', data: [] },
+            { label: 'Formaldehyde', data: [] }];
+var index = 0;
+var options = {
+	lines: {
+		show: true
+	},
+	points: {
+		show: false
+	},
+	xaxis: {
+		tickDecimals: 0,
+		tickSize: 1
+	}
+};
+function updateChart() {
+    $.getJSON('api/v1/sensors', function(d) {
+        data[0].data.push([ index, d.result.mq135 ]);
+        data[1].data.push([ index, d.result.mq138 ]);
+        if (data[0].data.length > 60) {
+            data[0].data = data[0].data.slice(1);
+            data[1].data = data[1].data.slice(1);
+        }
+        index++;
+        $.plot("#result", data, options);
+    });
+}
+$(function() {
+    setInterval(updateChart, 1000);
+});
+</script>
 {% end %}

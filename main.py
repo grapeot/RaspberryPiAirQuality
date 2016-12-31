@@ -8,18 +8,15 @@ import logging
 
 # Global models
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+sensorHelper = GPIOHelper()
 
-class APIJobHandler(APIRequestHandler):
+class SensorReadHandler(APIRequestHandler):
     def get(self):
-        self.write({ 'status': 'success', 'result': [ 1, 2, 3 ] })
-
-class APIPageHandler(APIRequestHandler):
-    def get(self):
-        self.render('api.html', title='API Index')
+        self.write({ 'status': 'success', 'result': sensorHelper.readSensors() })
 
 class HomePageHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('index.html', title='Index', items=[1, 2, 3])
+        self.render('index.html', title='Analog Sensor Recording')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="A test website using Tornado.")
@@ -36,8 +33,7 @@ if __name__ == '__main__':
     logging.info('static path = {0}'.format(os.path.join(os.getcwd(), 'static', r'\1')))
     handlers = [
         (r'/', HomePageHandler),
-        (r'/api', APIPageHandler),
-        (r'/api/v1/jobs', APIJobHandler),
+        (r'/api/v1/sensors', SensorReadHandler),
     ]
 
     application = tornado.web.Application(handlers, **settings)
