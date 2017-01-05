@@ -3,18 +3,21 @@
 {% block extraHeader %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
 <style>
-#result { width: 700px; height: 400px; }
+#result { width: 100%; height: 400px; }
 </style>
 {% end %}
 
 {% block body %}
 
 <h1>{{ title }}</h1>
+<div class="row">
 <div id="result"></div>
+</div>
 
 <script>
-var data = [{ label: 'NH3/NOx/Ben/Co2/Alcohol', data: [] },
-            { label: 'Formaldehyde', data: [] }];
+var data = [{ label: 'VOC', data: [] },
+            { label: 'Formaldehyde', data: [] },
+            { label: 'PM10', data: [] }];
 var index = 0;
 var options = {
 	lines: {
@@ -32,9 +35,11 @@ function updateChart() {
     $.getJSON('api/v1/sensors', function(d) {
         data[0].data.push([ index, d.result.mq135 ]);
         data[1].data.push([ index, d.result.mq138 ]);
+        data[2].data.push([ index, d.result.pm10]);
         if (data[0].data.length > 60) {
             data[0].data = data[0].data.slice(1);
             data[1].data = data[1].data.slice(1);
+            data[2].data = data[2].data.slice(1);
         }
         index++;
         $.plot("#result", data, options);

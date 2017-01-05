@@ -10,6 +10,7 @@ import time
 import os
 import RPi.GPIO as GPIO
 import spidev
+import wiringpi
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -27,8 +28,19 @@ class GPIOHelper:
     def __init__(self):
         self.mq135Pin = 0
         self.mq138Pin = 1
+        self.pm10Pin = 2
+        self.ILEDPin = 18
+        self.samplingTime = 280
+        self.deltaTime = 40
+        self.sleepTime = 9680
         self.spi = spidev.SpiDev()
         self.spi.open(0,0)
+        
+        # Initialize wiringpi
+        wiringpi.wiringPiSetupGpio() 
+        wiringpi.pinMode(self.ILEDPin, 1)
+        wiringpi.digitalWrite(self.ILEDPin, 0) # turn the LED off
+
 
 # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
     def readadc(self, adcnum):
@@ -37,8 +49,32 @@ class GPIOHelper:
         r = self.spi.xfer2([1,(8+adcnum)<<4,0])
         adcout = ((r[1]&3) << 8) + r[2]
         return adcout
+
+    def readPM25Sensor(self):
+        for i in range(10):
+            wiringpi.digitalWrite(self.ILEDPin, 1) # power on the LED
+            wiringpi.delayMicroseconds(self.samplingTime)
+            wiringpi.delayMicroseconds(self.deltaTime)
+            voMeasured = self.readadc(self.pm10Pin) # read the dust value
+            wiringpi.digitalWrite(self.ILEDPin, 0) # turn the LED off
+            wiringpi.delayMicroseconds(self.sleepTime)
+
+            # 0 - 5V mapped to 0 - 1023 integer values
+            # recover voltage
+            calcVoltage = voMeasured * (5.0 / 1024)
+            
+            # linear eqaution taken from http://www.howmuchsnow.com/arduino/airquality/
+            # Chris Nafis (c) 2012
+            dustDensity = 0.17 * calcVoltage - 0.1
+            #print("{0}, {1}, {2}".format(voMeasured, calcVoltage, dustDensity))
+        return voMeasured
      
     def readSensors(self):
         mq135 = self.readadc(self.mq135Pin)
         mq138 = self.readadc(self.mq138Pin)
-        return { 'mq135': mq135, 'mq138': mq138 }
+        pm10 = self.readadc(self.pm10Pin)
+        return { 'mq135': mq135, 'mq138': mq138, 'pm10': pm10 }
+
+if __name__ == '__main__':
+    helper = GPIOHelper()
+    print(helper.readSensors())
