@@ -1,5 +1,5 @@
 This is a Tornado project reading from MCP3008 ADC using raspberry pi.
-There is a MQ135 sensor on channel 0, a MQ138 on channel 1, and a Sharp dust sensor on channel 2.
+There is an MQ135 sensor on channel 0, an MQ138 on channel 1, and a Sharp dust sensor on channel 2.
 More information/documents can be found on the [blog post](https://grapeot.me/smart-air-purifier.html).
 
 ## SPI
