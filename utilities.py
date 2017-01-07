@@ -51,6 +51,7 @@ class GPIOHelper:
         return adcout
 
     def readPM25Sensor(self):
+        voMeasured = 0
         for i in range(10):
             wiringpi.digitalWrite(self.ILEDPin, 1) # power on the LED
             wiringpi.delayMicroseconds(self.samplingTime)
@@ -72,9 +73,11 @@ class GPIOHelper:
     def readSensors(self):
         mq135 = self.readadc(self.mq135Pin)
         mq138 = self.readadc(self.mq138Pin)
-        pm10 = self.readadc(self.pm10Pin)
+        pm10 = self.readPM25Sensor()
         return { 'mq135': mq135, 'mq138': mq138, 'pm10': pm10 }
 
 if __name__ == '__main__':
     helper = GPIOHelper()
-    print(helper.readSensors())
+    while True:
+        wiringpi.delay(500)
+        print(helper.readPM25Sensor())
