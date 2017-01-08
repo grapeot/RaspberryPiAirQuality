@@ -37,7 +37,8 @@ class GPIOHelper:
         self.sleepTime = 9680
         self.spi = spidev.SpiDev()
         self.spi.open(0,0)
-        self.serial = serial.Serial(port='/dev/serial0')
+        # Uncomment this when you need to read from the Nova PM25 sensor.
+        # self.serial = serial.Serial(port='/dev/serial0')
         
         # Initialize wiringpi
         wiringpi.wiringPiSetupGpio() 
@@ -54,11 +55,12 @@ class GPIOHelper:
 
     def readNovaPM25Sensor(self):
         data = self.serial.read(10)
-        pm25 = struct.unpack('<H', data[2:4])[0]
-        pm10 = struct.unpack('<H', data[4:6])[0]
+        # Parse the data and convert it to the unit of ug/m^3
+        pm25 = (data[3] * 256 + data[2]) / 10
+        pm10 = (data[5] * 256 + data[4]) / 10
         return { 'pm25': pm25, 'pm10': pm10 }
      
-    def readPM25Sensor(self):
+    def readSharpPM10Sensor(self):
         voMeasured = 0
         for i in range(10):
             wiringpi.digitalWrite(self.ILEDPin, 1) # power on the LED
@@ -81,11 +83,11 @@ class GPIOHelper:
     def readSensors(self):
         mq135 = self.readadc(self.mq135Pin)
         #mq138 = self.readadc(self.mq138Pin)
-        pm10 = self.readPM25Sensor() * 3 # calibrated with Nova sensor
+        pm10 = self.readSharpPM10Sensor()
         return { 'mq135': mq135, 'pm10': pm10 }
 
 if __name__ == '__main__':
     helper = GPIOHelper()
     while True:
         wiringpi.delay(500)
-        print(helper.readPM25Sensor())
+        print(helper.readSharpPM10Sensor())
