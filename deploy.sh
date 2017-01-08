@@ -1,7 +1,7 @@
 # install python dependencies
 sudo apt-get update
 sudo apt-get install -y python3-dev python3-pip swig2.0 nginx
-sudo pip3 install spidev rpi.gpio tornado
+sudo pip3 install spidev rpi.gpio tornado pyserial
 # Compile and install the wiringpi library, detailed instructions available at https://github.com/WiringPi/WiringPi-Python
 git clone https://github.com/WiringPi/WiringPi-Python --recursive
 cd WiringPi-Python

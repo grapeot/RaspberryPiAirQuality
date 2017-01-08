@@ -11,6 +11,8 @@ import os
 import RPi.GPIO as GPIO
 import spidev
 import wiringpi
+import struct
+import serial
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -35,12 +37,12 @@ class GPIOHelper:
         self.sleepTime = 9680
         self.spi = spidev.SpiDev()
         self.spi.open(0,0)
+        self.serial = serial.Serial(port='/dev/serial0')
         
         # Initialize wiringpi
         wiringpi.wiringPiSetupGpio() 
         wiringpi.pinMode(self.ILEDPin, 1)
         wiringpi.digitalWrite(self.ILEDPin, 0) # turn the LED off
-
 
 # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
     def readadc(self, adcnum):
@@ -50,6 +52,12 @@ class GPIOHelper:
         adcout = ((r[1]&3) << 8) + r[2]
         return adcout
 
+    def readNovaPM25Sensor(self):
+        data = self.serial.read(10)
+        pm25 = struct.unpack('<H', data[2:4])[0]
+        pm10 = struct.unpack('<H', data[4:6])[0]
+        return { 'pm25': pm25, 'pm10': pm10 }
+     
     def readPM25Sensor(self):
         voMeasured = 0
         for i in range(10):
@@ -72,9 +80,9 @@ class GPIOHelper:
      
     def readSensors(self):
         mq135 = self.readadc(self.mq135Pin)
-        mq138 = self.readadc(self.mq138Pin)
-        pm10 = self.readPM25Sensor()
-        return { 'mq135': mq135, 'mq138': mq138, 'pm10': pm10 }
+        #mq138 = self.readadc(self.mq138Pin)
+        pm10 = self.readPM25Sensor() * 3 # calibrated with Nova sensor
+        return { 'mq135': mq135, 'pm10': pm10 }
 
 if __name__ == '__main__':
     helper = GPIOHelper()
