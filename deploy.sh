@@ -1,7 +1,7 @@
 # install python dependencies
 sudo apt-get update
-sudo apt-get install -y python3-dev python3-pip swig2.0
-sudo pip3 install spidev rpi.gpio
+sudo apt-get install -y python3-dev python3-pip swig2.0 nginx
+sudo pip3 install spidev rpi.gpio tornado
 # Compile and install the wiringpi library, detailed instructions available at https://github.com/WiringPi/WiringPi-Python
 git clone https://github.com/WiringPi/WiringPi-Python --recursive
 cd WiringPi-Python
@@ -14,3 +14,6 @@ curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | b
 source ~/.bashrc
 nvm install node
 npm install -g pm2
+pm2 start ./launch.sh
+sudo pm2-startup
+pm2 save
