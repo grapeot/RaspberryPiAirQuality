@@ -1,3 +1,5 @@
+# This file is not part of the project, but may be useful if you use a push scheme (e.g. using an ESP8266 chip)
+
 from utilities import *
 import argparse
 import tornado
@@ -8,12 +10,22 @@ import logging
 
 # Global models
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-sensorHelper = GPIOHelper()
+AIR_QUALITY_FN = 'kitchenAirQuality.txt'
 
 class SensorReadHandler(APIRequestHandler):
     def get(self):
-        sensors = sensorHelper.readSensors()
-        self.write({ 'status': 'success', 'result': sensors })
+        self.write({ 'status': 'success', 'result': { 'mq135': AirQualityHandler.g_kitchenAirQuality }})
+
+class AirQualityHandler(APIRequestHandler):
+    g_kitchenAirQuality = 0
+    def get(self):
+        self.write({ 'status': 'success', 'result': AirQualityHandler.g_kitchenAirQuality })
+    def post(self):
+        AirQualityHandler.g_kitchenAirQuality = self.get_argument("air", 0)
+        open(AIR_QUALITY_FN, 'w').write(str(AirQualityHandler.g_kitchenAirQuality))
+        self.write({ 'status': 'success', 'result': AirQualityHandler.g_kitchenAirQuality })
+if os.path.exists(AIR_QUALITY_FN):
+    AirQualityHandler.g_kitchenAirQuality = int(open(AIR_QUALITY_FN).read().strip())
 
 class HomePageHandler(tornado.web.RequestHandler):
     def get(self):
@@ -35,6 +47,7 @@ if __name__ == '__main__':
     handlers = [
         (r'/', HomePageHandler),
         (r'/api/v1/sensors', SensorReadHandler),
+        (r'/api/v1/air', AirQualityHandler),
     ]
 
     application = tornado.web.Application(handlers, **settings)
